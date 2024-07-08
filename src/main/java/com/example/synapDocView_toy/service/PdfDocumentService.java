@@ -11,7 +11,7 @@ import java.util.UUID;
 @Service
 public class PdfDocumentService implements DocumentService {
 
-    private static final String UPLOAD_DIR = "uploads/pdf/";
+    private static final String UPLOAD_DIR = "src/main/resources/uploads/pdf/";
 
     @Override
     public String uploadDocument(MultipartFile file) throws Exception {

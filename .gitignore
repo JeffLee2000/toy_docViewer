@@ -36,5 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 
-### Download Document Folder ###
-uploads/
+### Uploads Folder ###
+src/main/resources/uploads/**

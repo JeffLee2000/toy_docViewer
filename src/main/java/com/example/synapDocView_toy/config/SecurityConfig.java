@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll())
                 .userDetailsService(userDetailsService)
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())) // X-Frame-Options 헤더 sameOrigin 설정
                 .build();
     }
 }
