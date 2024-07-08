@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .signup-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .signup-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .signup-container input[type="text"],
+        .signup-container input[type="email"],
+        .signup-container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .signup-container input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .signup-container input[type="submit"]:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="signup-container">
+    <h2>회원가입</h2>
+    <form action="/submit_signup" method="post">
+        <div style="margin-right: 10px">
+            <input type="text" name="name" placeholder="ID" required style="margin-right: 10px">
+            <input type="password" name="password" placeholder="비밀번호" required style="margin-right: 10px">
+            <input type="email" name="email" placeholder="이메일" required style="margin-right: 10px">
+        </div>
+        <hr>
+        <div style="margin-bottom: 5px">
+            <a href="/login">로그인</a>
+        </div>
+        <input type="submit" value="회원가입">
+    </form>
+</div>
+</body>
+</html>

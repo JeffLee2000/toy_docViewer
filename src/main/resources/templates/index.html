@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Document Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.worker.min.js"></script>
+</head>
+<body>
+<h1>PDF Document Viewer</h1>
+
+<input type="file" id="file-input" accept="application/pdf"/>
+<button id="upload-button">Upload and View</button>
+
+<script>
+    document.getElementById('upload-button').addEventListener('click', function() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/api/documents/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('File upload failed');
+                }
+                return response.text();
+            })
+            .then(filename => {
+                window.location.href = `/view?filename=${filename}`;
+            })
+            .catch(error => console.error('Error:', error));
+        } else {
+            alert('Please select a file.');
+        }
+    });
+</script>
+</body>
+</html>
