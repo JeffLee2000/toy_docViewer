@@ -1,6 +1,8 @@
 package com.example.synapDocView_toy.entity;
 
 import jakarta.persistence.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 public class Member {
@@ -10,8 +12,8 @@ public class Member {
     @SequenceGenerator(name = "member_seq", sequenceName = "MEMBER_SEQUENCE", allocationSize = 1)
     private Long id;
 
-    private String m_id;
-    private String m_pw;
+    private String memberId;
+    private String memberPw;
     private String email;
 
     public Long getId() {
@@ -22,20 +24,22 @@ public class Member {
         this.id = id;
     }
 
-    public String getM_id() {
-        return m_id;
+    public String getMemberId() {
+        return memberId;
     }
 
-    public void setM_id(String m_id) {
-        this.m_id = m_id;
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
     }
 
-    public String getM_pw() {
-        return m_pw;
+    public String getMemberPw() {
+        return memberPw;
     }
 
-    public void setM_pw(String m_pw) {
-        this.m_pw = m_pw;
+    public void setMemberPw(String memberPw) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedPassword = passwordEncoder.encode(memberPw);
+        this.memberPw = hashedPassword;
     }
 
     public String getEmail() {

@@ -27,8 +27,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf().disable() // CSRF 보호 기능 비활성화
                 .authorizeRequests(auth -> auth
-                        .requestMatchers("/login", "/signup",  "/resources/**").permitAll()
+                        .requestMatchers("/login", "/signup", "/submit_signup", "/signup_success", "/resources/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -45,4 +46,3 @@ public class SecurityConfig {
                 .build();
     }
 }
-
