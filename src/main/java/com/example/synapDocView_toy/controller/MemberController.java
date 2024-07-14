@@ -36,8 +36,8 @@ public class MemberController {
         Optional<Member> member = memberRepository.findById(id);
         if (member.isPresent()) {
             Member updatedMember = member.get();
-            updatedMember.setM_id(memberDetails.getM_id());
-            updatedMember.setM_pw(memberDetails.getM_pw());
+            updatedMember.setMemberId(memberDetails.getMemberId());
+            updatedMember.setMemberPw(memberDetails.getMemberPw());
             updatedMember.setEmail(memberDetails.getEmail());
             return ResponseEntity.ok(memberRepository.save(updatedMember));
         } else {
