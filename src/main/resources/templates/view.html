@@ -37,6 +37,11 @@
 <body>
 <div id="header">
     <h1>PDF Document Viewer</h1>
+    <div id="controls">
+        <button onclick="zoomOut()">-</button>
+        <button onclick="zoomIn()">+</button>
+        <span>확대률: <span id="zoom">100</span>%</span>
+    </div>
 </div>
 <div id="pdf-container"></div>
 
@@ -103,6 +108,26 @@
             }
         }
     });
+
+    let nowZoom = 100; // 현재 비율
+
+    function zoomOut() {
+        nowZoom = Math.max(50, nowZoom - 25);
+        zooms();
+    }
+
+    function zoomIn() {
+        nowZoom = Math.min(150, nowZoom + 25);
+        zooms();
+    }
+
+    function zooms() {
+        const pdfContainer = document.getElementById('pdf-container');
+        pdfContainer.style.transform = `scale(${nowZoom / 100})`;
+        pdfContainer.style.transformOrigin = 'top center';
+        document.getElementById('zoom').textContent = nowZoom;
+    }
+
 </script>
 </body>
 </html>
