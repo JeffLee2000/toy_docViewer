@@ -1,45 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>PDF Viewer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.worker.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-        }
-        #header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-        #pdf-container {
-            margin-top: 60px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .pdf-page {
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            background-color: white;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Document Viewer</title>
 </head>
 <body>
 <div id="header">
     <h1>PDF Document Viewer</h1>
+    <div id="page-info">
+        <input type="number" id="page-input">
+        / <span id="total-pages">0</span>
+        <div id="tooltip" class="tooltip">페이지 로드가 필요합니다.</div>
+    </div>
 </div>
 <div id="pdf-container"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
 <script>
     function getQueryParam(param) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -57,6 +34,9 @@
     let pdfDoc = null;
     let currentPage = 1;
     const pagesPerLoad = 5;
+    let isLoading = false;
+    let viewingPage = 1;
+    const pageElements = [];
 
     function loadPdf(url) {
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -66,6 +46,7 @@
         loadingTask.promise.then(pdf => {
             pdfDoc = pdf;
             console.log('PDF loaded');
+            document.getElementById('total-pages').textContent = pdf.numPages;
             loadPages(currentPage, pagesPerLoad);
         }, reason => {
             console.error(reason);
@@ -73,36 +54,176 @@
     }
 
     function loadPages(startPage, count) {
-        const pdfContainer = document.getElementById('pdf-container');
-        for (let i = startPage; i < startPage + count && i <= pdfDoc.numPages; i++) {
-            pdfDoc.getPage(i).then(page => {
-                const viewport = page.getViewport({ scale: 1.5 });
-                const canvas = document.createElement('canvas');
-                canvas.className = 'pdf-page';
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+        if (isLoading) return;
+        isLoading = true;
 
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
+        const endPage = Math.min(startPage + count - 1, pdfDoc.numPages);
 
-                page.render(renderContext).promise.then(() => {
-                    pdfContainer.appendChild(canvas);
-                });
-            });
+        const loadPagePromises = [];
+        for (let i = startPage; i <= endPage; i++) {
+            loadPagePromises.push(loadPage(i));
         }
-        currentPage += count;
+
+        Promise.all(loadPagePromises).then(() => {
+            pageElements.sort((a, b) => a.pageNum - b.pageNum);
+            const pdfContainer = document.getElementById('pdf-container');
+            pageElements.forEach(pageElement => {
+                pdfContainer.appendChild(pageElement.canvas);
+            });
+            currentPage = endPage + 1;
+            isLoading = false;
+        });
     }
 
+    function loadPage(pageNum) {
+        return pdfDoc.getPage(pageNum).then(page => {
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            canvas.className = 'pdf-page';
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            return page.render(renderContext).promise.then(() => {
+                const pageNumberDiv = document.createElement('div');
+                pageNumberDiv.className = 'page-number';
+                pageNumberDiv.textContent = pageNum;
+                canvas.appendChild(pageNumberDiv);
+                pageElements.push({ pageNum, canvas });
+            });
+        });
+    }
+
+    function scrollToPage(pageNum) {
+        const pageElement = pageElements.find(el => el.pageNum === pageNum);
+        if (pageElement) {
+            pageElement.canvas.scrollIntoView({ behavior: 'smooth' });
+            viewingPage = pageNum;
+            hideTooltip();
+        } else {
+            showTooltip();
+        }
+    }
+
+    function showTooltip() {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.classList.add('show');
+        setTimeout(() => {
+            tooltip.classList.remove('show');
+        }, 2000); // 툴팁을 2초 동안 표시
+    }
+
+    function hideTooltip() {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.classList.remove('show');
+    }
+
+    document.getElementById('page-input').addEventListener('change', (event) => {
+        const inputPage = parseInt(event.target.value);
+        if (inputPage > 0 && inputPage <= pdfDoc.numPages) {
+            scrollToPage(inputPage);
+        } else {
+            alert('페이지 번호를 입력하세요.');
+        }
+    });
+
     window.addEventListener('scroll', () => {
-        if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
+        if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 50) {
             if (currentPage <= pdfDoc.numPages) {
                 loadPages(currentPage, pagesPerLoad);
+            }
+        }
+
+        const pages = pageElements.map(el => el.canvas);
+        let found = false;
+        for (let i = 0; i < pages.length; i++) {
+            const page = pages[i];
+            const rect = page.getBoundingClientRect();
+            if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+                viewingPage = i + 1;
+                found = true;
+                break;
+            }
+        }
+        if (!found && pages.length > 0) {
+            const firstPage = pages[0].getBoundingClientRect();
+            if (firstPage.top > 0) {
+                viewingPage = 1;
+            } else {
+                viewingPage = pages.length;
             }
         }
     });
 </script>
 </body>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding-top: 60px;
+    }
+    #header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #f8f8f8;
+        border-bottom: 1px solid #ccc;
+        z-index: 1000;
+        box-sizing: border-box;
+        overflow: visible;
+    }
+    #header h1 {
+        margin: 0;
+        font-size: 24px;
+        flex: 1;
+        text-align: center;
+        white-space: nowrap;
+    }
+    #page-info {
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        position: relative;
+    }
+    #page-input {
+        text-align: center;
+        margin-left: 5px;
+        margin-right: 5px;
+        width: 60px;
+    }
+    #pdf-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+    }
+    .tooltip {
+        display: none;
+        position: absolute;
+        background-color: #333;
+        color: #fff;
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 1000;
+        white-space: nowrap;
+        max-width: 200px;
+        box-sizing: border-box;
+        top: 100%;
+        left: -25px;
+        transform: translateY(5px);
+    }
+    .tooltip.show {
+        display: block;
+    }
+</style>
 </html>
