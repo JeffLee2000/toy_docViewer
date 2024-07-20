@@ -3,6 +3,7 @@ package com.example.synapDocView_toy.controller;
 import com.example.synapDocView_toy.service.DocumentService;
 import com.example.synapDocView_toy.service.HwpDocumentService;
 import com.example.synapDocView_toy.service.PdfDocumentService;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +67,6 @@ public class DocumentController {
 
         try {
             Path path = documentService.getDocumentPath(filename);
-            // System.out.println(path.toUri()); 2번 동작 됨 왜?
             Resource resource = new UrlResource(path.toUri());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
@@ -74,6 +75,22 @@ public class DocumentController {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/api/documents/iframe")
+    public String showIframe(@RequestParam String filename, Model model) {
+        String baseFilename = FilenameUtils.getBaseName(filename);
+        String fileExtension = StringUtils.getFilenameExtension(filename);
+        String filePath = "/uploads/" + fileExtension + "/index.xhtml?v=1"; // resources 폴더 기준
+        model.addAttribute("filePath", filePath);
+        System.out.println("viewing filePath: " + filePath);
+
+        return "iframe";
+    }
+
+    @GetMapping("/iframe/view/document")
+    public String requestIframe(Model model) {
+        return "";
     }
 
     @GetMapping("/view")

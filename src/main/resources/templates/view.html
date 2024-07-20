@@ -72,9 +72,13 @@
     }
 
     const filename = getQueryParam('filename');
-    if (filename) {
+    if (filename.toLowerCase().endsWith('.pdf')) {
         const url = `/api/documents/download/${filename}`;
         loadPdf(url);
+    }
+    else if (filename.toLowerCase().endsWith('.hwp')) {
+        const url = `/api/documents/iframe`;
+        loadHwp(url, filename);
     } else {
         alert('No file specified.');
     }
@@ -119,6 +123,11 @@
             });
         }
         currentPage += count;
+    }
+
+    async function loadHwp(url, filename) {
+        window.location.href = `${url}?filename=${filename}`;
+        return;
     }
 
     window.addEventListener('scroll', () => {
