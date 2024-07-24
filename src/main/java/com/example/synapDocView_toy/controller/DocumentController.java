@@ -79,18 +79,12 @@ public class DocumentController {
 
     @GetMapping("/api/documents/iframe")
     public String showIframe(@RequestParam String filename, Model model) {
-        String baseFilename = FilenameUtils.getBaseName(filename);
         String fileExtension = StringUtils.getFilenameExtension(filename);
-        String filePath = "/uploads/" + fileExtension + "/index.xhtml?v=1"; // resources 폴더 기준
+        String filePath = "/uploads/" + fileExtension + "/index.xhtml"; // resources 폴더 기준
         model.addAttribute("filePath", filePath);
         System.out.println("viewing filePath: " + filePath);
 
         return "iframe";
-    }
-
-    @GetMapping("/iframe/view/document")
-    public String requestIframe(Model model) {
-        return "";
     }
 
     @GetMapping("/view")
