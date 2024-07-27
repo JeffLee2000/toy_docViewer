@@ -5,9 +5,63 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        #header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        #hwp-container {
+            margin-top: 60px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-<iframe th:src="@{${filePath}}" frameborder="0" style="display:block; width:100vw; height: 100vh" allowfullscreen></iframe>
-/uploads/hwp/index.xhtml
+<div id="header">
+    <h1>HWP Document Viewer</h1>
+    <div id="controls">
+        <button onclick="zoomOut()">-</button>
+        <button onclick="zoomIn()">+</button>
+        <span>확대률: <span id="zoom">100</span>%</span>
+    </div>
+</div>
+
+<div id="hwp-container">
+    <iframe th:src="@{${filePath}}" style="display:block; width:100vw; height: 100vh" allowfullscreen></iframe>
+</div>
+<script>
+    let nowZoom = 100; // 현재 비율
+
+    function zoomOut() {
+        nowZoom = Math.max(50, nowZoom - 25);
+        zooms();
+    }
+
+    function zoomIn() {
+        nowZoom = Math.min(150, nowZoom + 25);
+        zooms();
+    }
+
+    function zooms() {
+        const hwpContainer = document.getElementById('hwp-container');
+        hwpContainer.style.transform = `scale(${nowZoom / 100})`;
+        hwpContainer.style.transformOrigin = 'top center';
+        document.getElementById('zoom').textContent = nowZoom;
+    }
+</script>
 </body>
 </html>
